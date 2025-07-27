@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
     if (image) {
       // OpenAI Vision API를 사용하여 이미지 분석
       const response = await openai.chat.completions.create({
-        model: "gpt-4-vision-preview",
+        model: "gpt-4o",
         messages: [
           {
             role: "user",
@@ -128,7 +128,8 @@ function generateRecommendations(nutrition: any) {
       name: "시금치",
       nutrition: "철분, 비타민A",
       description: "철분이 부족합니다. 시금치를 추가로 섭취하세요.",
-      image: "🥬"
+      image: "🥬",
+      foodList: ["시금치", "브로콜리", "콩", "쇠고기", "달걀"]
     });
   }
   
@@ -138,7 +139,8 @@ function generateRecommendations(nutrition: any) {
       name: "오렌지",
       nutrition: "비타민C",
       description: "비타민C 섭취를 늘려보세요.",
-      image: "🍊"
+      image: "🍊",
+      foodList: ["오렌지", "레몬", "키위", "딸기", "파프리카"]
     });
   }
   
@@ -148,7 +150,8 @@ function generateRecommendations(nutrition: any) {
       name: "연어",
       nutrition: "오메가3, 단백질",
       description: "고품질 단백질과 오메가3를 섭취하세요.",
-      image: "🐟"
+      image: "🐟",
+      foodList: ["연어", "닭가슴살", "계란", "두부", "콩"]
     });
   }
   
@@ -158,7 +161,30 @@ function generateRecommendations(nutrition: any) {
       name: "우유",
       nutrition: "칼슘, 단백질",
       description: "칼슘 섭취를 늘려보세요.",
-      image: "🥛"
+      image: "🥛",
+      foodList: ["우유", "요거트", "치즈", "두부", "브로콜리"]
+    });
+  }
+  
+  // 비타민A 부족 체크
+  if (nutrition.vitamins.vitaminA < 300) {
+    recommendations.push({
+      name: "당근",
+      nutrition: "비타민A",
+      description: "비타민A 섭취를 늘려보세요.",
+      image: "🥕",
+      foodList: ["당근", "고구마", "시금치", "브로콜리", "달걀노른자"]
+    });
+  }
+  
+  // 비타민D 부족 체크
+  if (nutrition.vitamins.vitaminD < 2) {
+    recommendations.push({
+      name: "연어",
+      nutrition: "비타민D",
+      description: "비타민D 섭취를 늘려보세요.",
+      image: "🐟",
+      foodList: ["연어", "고등어", "달걀노른자", "우유", "버섯"]
     });
   }
   
@@ -168,7 +194,8 @@ function generateRecommendations(nutrition: any) {
       name: "견과류",
       nutrition: "불포화지방, 단백질",
       description: "건강한 지방과 단백질을 섭취하세요.",
-      image: "🥜"
+      image: "🥜",
+      foodList: ["아몬드", "호두", "땅콩", "피스타치오", "캐슈넛"]
     });
   }
   
