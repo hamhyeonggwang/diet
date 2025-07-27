@@ -345,28 +345,28 @@ export default function Home() {
                   <h3 className="text-lg font-medium text-gray-700">기본 영양소</h3>
                   <div className="space-y-3">
                     <div className="flex justify-between items-center p-4 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg border border-yellow-200">
-                      <span className="flex items-center gap-2">
+                      <span className="flex items-center gap-2 text-gray-900">
                         <Zap className="h-4 w-4 text-yellow-500" />
                         칼로리
                       </span>
                       <span className="font-semibold text-yellow-700">{nutritionInfo.calories} kcal</span>
                     </div>
                     <div className="flex justify-between items-center p-4 bg-gradient-to-r from-red-50 to-pink-50 rounded-lg border border-red-200">
-                      <span className="flex items-center gap-2">
+                      <span className="flex items-center gap-2 text-gray-900">
                         <Heart className="h-4 w-4 text-red-500" />
                         단백질
                       </span>
                       <span className="font-semibold text-red-700">{nutritionInfo.protein}g</span>
                     </div>
                     <div className="flex justify-between items-center p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200">
-                      <span className="flex items-center gap-2">
+                      <span className="flex items-center gap-2 text-gray-900">
                         <Apple className="h-4 w-4 text-green-500" />
                         탄수화물
                       </span>
                       <span className="font-semibold text-green-700">{nutritionInfo.carbs}g</span>
                     </div>
                     <div className="flex justify-between items-center p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
-                      <span className="flex items-center gap-2">
+                      <span className="flex items-center gap-2 text-gray-900">
                         <Brain className="h-4 w-4 text-blue-500" />
                         지방
                       </span>
