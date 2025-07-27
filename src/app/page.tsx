@@ -231,7 +231,7 @@ export default function Home() {
             <div className="grid md:grid-cols-2 gap-8">
               {/* 이미지 업로드 */}
               <div className="space-y-4">
-                <h3 className="text-lg font-medium text-gray-700 flex items-center gap-2">
+                <h3 className="text-lg font-medium text-gray-900 flex items-center gap-2">
                   <Search className="h-5 w-5 text-purple-500" />
                   음식 사진 촬영/업로드
                 </h3>
@@ -286,7 +286,7 @@ export default function Home() {
 
               {/* 음식명 입력 */}
               <div className="space-y-4">
-                <h3 className="text-lg font-medium text-gray-700 flex items-center gap-2">
+                <h3 className="text-lg font-medium text-gray-900 flex items-center gap-2">
                   <Sparkles className="h-5 w-5 text-purple-500" />
                   음식명 직접 입력
                 </h3>
@@ -342,7 +342,7 @@ export default function Home() {
               <div className="grid md:grid-cols-2 gap-8">
                 {/* 기본 영양소 */}
                 <div className="space-y-4">
-                  <h3 className="text-lg font-medium text-gray-700">기본 영양소</h3>
+                  <h3 className="text-lg font-medium text-gray-900">기본 영양소</h3>
                   <div className="space-y-3">
                     <div className="flex justify-between items-center p-4 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg border border-yellow-200">
                       <span className="flex items-center gap-2 text-gray-900">
@@ -377,7 +377,7 @@ export default function Home() {
 
                 {/* 비타민 & 미네랄 */}
                 <div className="space-y-4">
-                  <h3 className="text-lg font-medium text-gray-700">비타민 & 미네랄</h3>
+                  <h3 className="text-lg font-medium text-gray-900">비타민 & 미네랄</h3>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="p-4 bg-orange-50 rounded-lg border border-orange-200">
                       <div className="text-sm text-orange-600 font-medium">비타민 A</div>
