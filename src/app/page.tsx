@@ -37,15 +37,23 @@ export default function Home() {
   const [nutritionInfo, setNutritionInfo] = useState<NutritionInfo | null>(null);
   const [recommendations, setRecommendations] = useState<RecommendedFood[]>([]);
   const [foodName, setFoodName] = useState('');
+  const [analysisMessage, setAnalysisMessage] = useState('');
   const [currentCharacter, setCurrentCharacter] = useState<'chicchic' | 'nyamnyang'>('chicchic');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
 
-  // 고양이 울음 소리 재생 함수
+  // 고양이 울음 소리 재생 함수 (아이폰 호환성 개선)
   const playCatMeow = () => {
     try {
-      // Web Audio API를 사용하여 고양이 울음 소리 생성
-      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      // 아이폰에서는 사용자 상호작용 후에만 AudioContext 생성 가능
+      const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+      const audioContext = new AudioContext();
+      
+      // 아이폰에서 AudioContext가 suspended 상태일 수 있음
+      if (audioContext.state === 'suspended') {
+        audioContext.resume();
+      }
+      
       const oscillator = audioContext.createOscillator();
       const gainNode = audioContext.createGain();
       
@@ -57,8 +65,8 @@ export default function Home() {
       oscillator.frequency.exponentialRampToValueAtTime(400, audioContext.currentTime + 0.3);
       oscillator.frequency.exponentialRampToValueAtTime(600, audioContext.currentTime + 0.6);
       
-      // 볼륨 설정
-      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+      // 볼륨 설정 (아이폰에서는 더 낮은 볼륨 권장)
+      gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
       gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.8);
       
       oscillator.start(audioContext.currentTime);
@@ -66,23 +74,36 @@ export default function Home() {
       
     } catch (error) {
       console.log('고양이 울음 소리 재생 실패:', error);
+      // 아이폰에서 실패해도 앱이 계속 작동하도록 함
     }
   };
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
+      // 아이폰에서 파일 크기 제한 확인
+      if (file.size > 10 * 1024 * 1024) { // 10MB 제한
+        alert('파일 크기가 너무 큽니다. 10MB 이하의 이미지를 선택해주세요.');
+        return;
+      }
+      
       const reader = new FileReader();
       reader.onload = (e) => {
         setSelectedImage(e.target?.result as string);
         setCurrentCharacter('chicchic');
+      };
+      reader.onerror = () => {
+        alert('이미지 파일을 읽을 수 없습니다. 다른 이미지를 선택해주세요.');
       };
       reader.readAsDataURL(file);
     }
   };
 
   const handleCameraCapture = () => {
-    fileInputRef.current?.click();
+    // 아이폰에서 카메라 접근을 위한 사용자 상호작용 확인
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
   };
 
   const analyzeNutrition = async () => {
@@ -114,6 +135,7 @@ export default function Home() {
       
       setNutritionInfo(data.nutrition);
       setRecommendations(data.recommendations);
+      setAnalysisMessage(data.message || '');
     } catch (error) {
       console.error('영양 분석 오류:', error);
       alert('영양 분석 중 오류가 발생했습니다.');
@@ -290,17 +312,17 @@ export default function Home() {
                       <div className="flex gap-3 justify-center">
                         <button
                           onClick={handleCameraCapture}
-                          className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-yellow-400 to-orange-500 text-white rounded-lg hover:from-yellow-500 hover:to-orange-600 transition-all font-medium"
+                          className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-yellow-400 to-orange-500 text-white rounded-lg hover:from-yellow-500 hover:to-orange-600 transition-all font-medium active:scale-95"
                         >
                           <Camera className="h-4 w-4" />
-                          찍기
+                          카메라
                         </button>
                         <button
                           onClick={() => fileInputRef.current?.click()}
-                          className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-400 to-pink-500 text-white rounded-lg hover:from-purple-500 hover:to-pink-600 transition-all font-medium"
+                          className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-400 to-pink-500 text-white rounded-lg hover:from-purple-500 hover:to-pink-600 transition-all font-medium active:scale-95"
                         >
                           <Upload className="h-4 w-4" />
-                          업로드
+                          갤러리
                         </button>
                       </div>
                     </div>
@@ -309,6 +331,7 @@ export default function Home() {
                     ref={fileInputRef}
                     type="file"
                     accept="image/*"
+                    capture="environment"
                     onChange={handleImageUpload}
                     className="hidden"
                   />
@@ -324,14 +347,46 @@ export default function Home() {
                 <div className="space-y-4">
                   <input
                     type="text"
-                    placeholder="예: 김치찌개, 샐러드, 닭가슴살..."
+                    placeholder="예: 김치찌개, 샐러드, 닭가슴살, 파스타, 샌드위치..."
                     value={foodName}
                     onChange={(e) => setFoodName(e.target.value)}
                     className="w-full px-4 py-3 border border-purple-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-purple-50 text-gray-900 placeholder-gray-600"
                   />
-                  <p className="text-sm text-gray-500">
-                                         음식명을 알려주시면 냠냥이가 분석해드릴게요!
+                  <p className="text-sm text-gray-500 mb-3">
+                    어떤 음식이든 입력하시면 냠냥이가 AI로 분석해드릴게요!
                   </p>
+                  
+                  {/* 빠른 선택 버튼들 */}
+                  <div className="space-y-2">
+                    <p className="text-xs text-gray-500 font-medium">빠른 선택 (데이터베이스):</p>
+                    <div className="flex flex-wrap gap-2">
+                      {['김치찌개', '된장찌개', '불고기', '비빔밥', '라면', '피자', '햄버거', '스테이크', '연어', '계란', '우유', '바나나', '사과'].map((food) => (
+                        <button
+                          key={food}
+                          onClick={() => setFoodName(food)}
+                          className="px-3 py-1 text-xs bg-purple-100 text-purple-700 rounded-full border border-purple-200 hover:bg-purple-200 transition-colors"
+                        >
+                          {food}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  {/* AI 분석 예시 */}
+                  <div className="space-y-2 mt-3">
+                    <p className="text-xs text-gray-500 font-medium">AI 분석 예시:</p>
+                    <div className="flex flex-wrap gap-2">
+                      {['파스타', '샌드위치', '스시', '타코', '커리', '라멘', '떡볶이', '치킨', '피자', '아이스크림'].map((food) => (
+                        <button
+                          key={food}
+                          onClick={() => setFoodName(food)}
+                          className="px-3 py-1 text-xs bg-gradient-to-r from-pink-100 to-purple-100 text-purple-700 rounded-full border border-pink-200 hover:from-pink-200 hover:to-purple-200 transition-colors"
+                        >
+                          {food}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -341,7 +396,7 @@ export default function Home() {
               <button
                 onClick={analyzeNutrition}
                 disabled={isAnalyzing || (!selectedImage && !foodName)}
-                className="flex items-center gap-3 mx-auto px-8 py-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg font-semibold text-lg hover:from-purple-600 hover:to-pink-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+                className="flex items-center gap-3 mx-auto px-8 py-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg font-semibold text-lg hover:from-purple-600 hover:to-pink-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg active:scale-95 touch-manipulation"
               >
                 {isAnalyzing ? (
                   <>
@@ -365,9 +420,16 @@ export default function Home() {
                 <div className="w-10 h-10 bg-gradient-to-r from-pink-400 to-red-500 rounded-full flex items-center justify-center">
                   <Utensils className="h-5 w-5 text-white" />
                 </div>
-                                 <h2 className="text-2xl font-semibold text-gray-800">
-                   냠냥이의 영양 분석 결과
-                 </h2>
+                <div>
+                  <h2 className="text-2xl font-semibold text-gray-800">
+                    냠냥이의 영양 분석 결과
+                  </h2>
+                  {analysisMessage && (
+                    <p className="text-sm text-purple-600 font-medium mt-1">
+                      {analysisMessage}
+                    </p>
+                  )}
+                </div>
               </div>
               
               <div className="grid md:grid-cols-2 gap-8">
