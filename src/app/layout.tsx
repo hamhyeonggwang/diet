@@ -13,13 +13,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "찍찍이와 냠냠이 - 영양 분석 앱",
+  title: "찍찍이와 냠냥이 - 영양 분석 앱",
   description: "AI를 활용한 친근한 식생활 교육용 웹 애플리케이션",
   viewport: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "찍찍이와 냠냠이",
+    title: "찍찍이와 냠냥이",
   },
   formatDetection: {
     telephone: false,
@@ -36,7 +36,7 @@ export default function RootLayout({
       <head>
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="찍찍이와 냠냠이" />
+        <meta name="apple-mobile-web-app-title" content="찍찍이와 냠냥이" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="theme-color" content="#8b5cf6" />
         <meta name="msapplication-TileColor" content="#8b5cf6" />

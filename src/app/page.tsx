@@ -29,7 +29,80 @@ interface RecommendedFood {
   description: string;
   image: string;
   foodList: string[];
+  recipes?: Recipe[];
 }
+
+interface Recipe {
+  name: string;
+  ingredients: string[];
+  instructions: string[];
+  cookingTime: string;
+  difficulty: string;
+  nutrition: string;
+}
+
+// 1일 권장 영양소 (연령별 기준)
+const dailyNutrition = {
+  adult: {
+    calories: 2000,
+    protein: 50,
+    carbs: 275,
+    fat: 55,
+    fiber: 28,
+    vitamins: {
+      vitaminA: 900,
+      vitaminC: 90,
+      vitaminD: 15,
+      vitaminE: 15
+    },
+    minerals: {
+      calcium: 1000,
+      iron: 18,
+      potassium: 3500
+    }
+  },
+  teenager: {
+    calories: 2200,
+    protein: 60,
+    carbs: 300,
+    fat: 60,
+    fiber: 30,
+    vitamins: {
+      vitaminA: 900,
+      vitaminC: 90,
+      vitaminD: 15,
+      vitaminE: 15
+    },
+    minerals: {
+      calcium: 1300,
+      iron: 15,
+      potassium: 3500
+    }
+  },
+  child: {
+    calories: 1600,
+    protein: 40,
+    carbs: 200,
+    fat: 45,
+    fiber: 25,
+    vitamins: {
+      vitaminA: 600,
+      vitaminC: 45,
+      vitaminD: 10,
+      vitaminE: 11
+    },
+    minerals: {
+      calcium: 1000,
+      iron: 10,
+      potassium: 3000
+    }
+  }
+};
+
+// 영양소 충족도 계산 함수
+const calculateNutritionPercentage = (current: number, recommended: number) => {
+  return Math.min((current / recommended) * 100, 100);
+};
 
 export default function Home() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -39,6 +112,7 @@ export default function Home() {
   const [foodName, setFoodName] = useState('');
   const [analysisMessage, setAnalysisMessage] = useState('');
   const [currentCharacter, setCurrentCharacter] = useState<'chicchic' | 'nyamnyang'>('chicchic');
+  const [selectedAge, setSelectedAge] = useState<'child' | 'teenager' | 'adult'>('child');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
 
@@ -179,13 +253,13 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50">
+    <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-8">
         {/* 헤더 */}
         <header className="text-center mb-12">
           <div className="flex items-center justify-center gap-4 mb-6">
             <div className="relative">
-              <div className="w-16 h-16 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center shadow-lg overflow-hidden">
+              <div className="w-16 h-16 bg-yellow-400 rounded-full flex items-center justify-center shadow-lg overflow-hidden">
                 <Image 
                   src="/images/chicchic.png" 
                   alt="찍찍이" 
@@ -198,11 +272,11 @@ export default function Home() {
                 <span className="text-xs">📷</span>
               </div>
             </div>
-            <h1 className="text-5xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-              찍찍이와 냠냠이
+            <h1 className="text-5xl font-bold text-gray-800">
+              찍찍이와 냠냥이
             </h1>
             <div className="relative">
-              <div className="w-16 h-16 bg-gradient-to-r from-pink-400 to-red-500 rounded-full flex items-center justify-center shadow-lg overflow-hidden">
+              <div className="w-16 h-16 bg-pink-400 rounded-full flex items-center justify-center shadow-lg overflow-hidden">
                 <Image 
                   src="/images/nyamnyang.png" 
                   alt="냠냥이" 
@@ -216,49 +290,87 @@ export default function Home() {
               </div>
             </div>
           </div>
-          <p className="text-xl text-gray-700 mb-4">
-            찍찍이가 음식을 찍으면 냠냠이가 영양소를 알려줘요!
+          <p className="text-xl text-gray-600 mb-6">
+            찍찍이가 음식을 찍으면 냠냥이가 영양소를 알려줘요!
           </p>
-                       <div className="flex items-center justify-center gap-6 text-sm text-gray-600">
-               <span className="flex items-center gap-2">
-                 <span className="w-3 h-3 bg-yellow-400 rounded-full"></span>
-                 찍찍이 (탐정)
-               </span>
-               <span>•</span>
-               <span className="flex items-center gap-2">
-                 <span className="w-3 h-3 bg-pink-400 rounded-full"></span>
-                 냠냥이 (영양사)
-               </span>
-             </div>
+          
+          {/* 연령 선택 */}
+          <div className="flex justify-center gap-4 mb-6">
+            <div className="text-sm text-gray-600 font-medium">연령 선택:</div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setSelectedAge('child')}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                  selectedAge === 'child'
+                    ? 'bg-blue-600 text-white shadow-md'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                아동 (6-12세)
+              </button>
+              <button
+                onClick={() => setSelectedAge('teenager')}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                  selectedAge === 'teenager'
+                    ? 'bg-blue-600 text-white shadow-md'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                청소년 (13-18세)
+              </button>
+              <button
+                onClick={() => setSelectedAge('adult')}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                  selectedAge === 'adult'
+                    ? 'bg-blue-600 text-white shadow-md'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                성인 (19세+)
+              </button>
+            </div>
+          </div>
+          
+          <div className="flex items-center justify-center gap-6 text-sm text-gray-500">
+            <span className="flex items-center gap-2">
+              <span className="w-3 h-3 bg-yellow-400 rounded-full"></span>
+              찍찍이 (탐정)
+            </span>
+            <span>•</span>
+            <span className="flex items-center gap-2">
+              <span className="w-3 h-3 bg-pink-400 rounded-full"></span>
+              냠냥이 (영양사)
+            </span>
+          </div>
         </header>
 
         {/* 캐릭터 메시지 */}
         <div className="max-w-2xl mx-auto mb-8">
-          <div className="bg-white rounded-2xl shadow-lg p-6 border-l-4 border-purple-500">
+          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
             <div className="flex items-center gap-4">
-                             <div className={`w-12 h-12 rounded-full flex items-center justify-center overflow-hidden ${
-                 currentCharacter === 'chicchic' 
-                   ? 'bg-gradient-to-r from-yellow-400 to-orange-500' 
-                   : 'bg-gradient-to-r from-pink-400 to-red-500'
-               }`}>
-                 {currentCharacter === 'chicchic' ? (
-                   <Image 
-                     src="/images/chicchic.png" 
-                     alt="찍찍이" 
-                     width={48} 
-                     height={48}
-                     className="rounded-full object-cover"
-                   />
-                 ) : (
-                   <Image 
-                     src="/images/nyamnyang.png" 
-                     alt="냠냥이" 
-                     width={48} 
-                     height={48}
-                     className="rounded-full object-cover"
-                   />
-                 )}
-               </div>
+              <div className={`w-12 h-12 rounded-full flex items-center justify-center overflow-hidden ${
+                currentCharacter === 'chicchic' 
+                  ? 'bg-yellow-400' 
+                  : 'bg-pink-400'
+              }`}>
+                {currentCharacter === 'chicchic' ? (
+                  <Image 
+                    src="/images/chicchic.png" 
+                    alt="찍찍이" 
+                    width={48} 
+                    height={48}
+                    className="rounded-full object-cover"
+                  />
+                ) : (
+                  <Image 
+                    src="/images/nyamnyang.png" 
+                    alt="냠냥이" 
+                    width={48} 
+                    height={48}
+                    className="rounded-full object-cover"
+                  />
+                )}
+              </div>
               <div className="flex-1">
                 <p className="text-gray-800 font-medium">
                   {getCharacterMessage()}
@@ -271,9 +383,9 @@ export default function Home() {
         {/* 메인 컨텐츠 */}
         <div className="max-w-4xl mx-auto">
           {/* 입력 섹션 */}
-          <div className="bg-white rounded-2xl shadow-lg p-8 mb-8 border-2 border-purple-100">
+          <div className="bg-white rounded-xl shadow-sm p-8 mb-8 border border-gray-200">
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center">
+              <div className="w-10 h-10 bg-yellow-400 rounded-full flex items-center justify-center">
                 <Camera className="h-5 w-5 text-white" />
               </div>
               <h2 className="text-2xl font-semibold text-gray-800">
@@ -285,16 +397,16 @@ export default function Home() {
               {/* 이미지 업로드 */}
               <div className="space-y-4">
                 <h3 className="text-lg font-medium text-gray-900 flex items-center gap-2">
-                  <Search className="h-5 w-5 text-purple-500" />
+                  <Search className="h-5 w-5 text-gray-600" />
                   음식 사진 촬영/업로드
                 </h3>
-                <div className="border-2 border-dashed border-purple-300 rounded-lg p-6 text-center hover:border-purple-400 transition-colors bg-purple-50">
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors bg-gray-50">
                   {selectedImage ? (
                     <div className="space-y-4">
                       <img 
                         src={selectedImage} 
                         alt="Selected food" 
-                        className="w-full h-48 object-cover rounded-lg shadow-md"
+                        className="w-full h-48 object-cover rounded-lg shadow-sm"
                       />
                       <button
                         onClick={() => setSelectedImage(null)}
@@ -305,21 +417,21 @@ export default function Home() {
                     </div>
                   ) : (
                     <div className="space-y-4">
-                      <div className="w-16 h-16 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center mx-auto">
+                      <div className="w-16 h-16 bg-yellow-400 rounded-full flex items-center justify-center mx-auto">
                         <Camera className="h-8 w-8 text-white" />
                       </div>
                       <p className="text-gray-600">찍찍이가 음식을 찍어드릴게요!</p>
                       <div className="flex gap-3 justify-center">
                         <button
                           onClick={handleCameraCapture}
-                          className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-yellow-400 to-orange-500 text-white rounded-lg hover:from-yellow-500 hover:to-orange-600 transition-all font-medium active:scale-95"
+                          className="flex items-center gap-2 px-4 py-2 bg-yellow-400 text-white rounded-lg hover:bg-yellow-500 transition-all font-medium"
                         >
                           <Camera className="h-4 w-4" />
                           카메라
                         </button>
                         <button
                           onClick={() => fileInputRef.current?.click()}
-                          className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-400 to-pink-500 text-white rounded-lg hover:from-purple-500 hover:to-pink-600 transition-all font-medium active:scale-95"
+                          className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-all font-medium"
                         >
                           <Upload className="h-4 w-4" />
                           갤러리
@@ -341,7 +453,7 @@ export default function Home() {
               {/* 음식명 입력 */}
               <div className="space-y-4">
                 <h3 className="text-lg font-medium text-gray-900 flex items-center gap-2">
-                  <Sparkles className="h-5 w-5 text-purple-500" />
+                  <Sparkles className="h-5 w-5 text-gray-600" />
                   음식명 직접 입력
                 </h3>
                 <div className="space-y-4">
@@ -350,7 +462,7 @@ export default function Home() {
                     placeholder="예: 김치찌개, 샐러드, 닭가슴살, 파스타, 샌드위치..."
                     value={foodName}
                     onChange={(e) => setFoodName(e.target.value)}
-                    className="w-full px-4 py-3 border border-purple-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-purple-50 text-gray-900 placeholder-gray-600"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50 text-gray-900 placeholder-gray-600"
                   />
                   <p className="text-sm text-gray-500 mb-3">
                     어떤 음식이든 입력하시면 냠냥이가 AI로 분석해드릴게요!
@@ -358,13 +470,13 @@ export default function Home() {
                   
                   {/* 빠른 선택 버튼들 */}
                   <div className="space-y-2">
-                    <p className="text-xs text-gray-500 font-medium">빠른 선택 (데이터베이스):</p>
+                    <p className="text-xs text-gray-500 font-medium">아이들 음식 (데이터베이스):</p>
                     <div className="flex flex-wrap gap-2">
-                      {['김치찌개', '된장찌개', '불고기', '비빔밥', '라면', '피자', '햄버거', '스테이크', '연어', '계란', '우유', '바나나', '사과'].map((food) => (
+                      {['치킨', '떡볶이', '순대', '김밥', '라멘', '파스타', '샌드위치', '토스트', '시리얼', '요거트', '치즈', '아이스크림', '초콜릿', '과자', '딸기', '포도', '오렌지', '키위', '망고', '복숭아', '수박', '멜론', '당근', '브로콜리', '시금치', '감자', '고구마', '콩', '두부', '견과류', '아몬드', '호두', '땅콩', '달걀프라이', '스크램블에그', '오믈렛', '팬케이크', '와플', '도넛', '마카롱', '티라미수', '케이크', '쿠키', '마시멜로', '캔디'].map((food) => (
                         <button
                           key={food}
                           onClick={() => setFoodName(food)}
-                          className="px-3 py-1 text-xs bg-purple-100 text-purple-700 rounded-full border border-purple-200 hover:bg-purple-200 transition-colors"
+                          className="px-3 py-1 text-xs bg-gray-100 text-gray-700 rounded-full border border-gray-200 hover:bg-gray-200 transition-colors"
                         >
                           {food}
                         </button>
@@ -376,11 +488,11 @@ export default function Home() {
                   <div className="space-y-2 mt-3">
                     <p className="text-xs text-gray-500 font-medium">AI 분석 예시:</p>
                     <div className="flex flex-wrap gap-2">
-                      {['파스타', '샌드위치', '스시', '타코', '커리', '라멘', '떡볶이', '치킨', '피자', '아이스크림'].map((food) => (
+                      {['스시', '타코', '커리', '라멘', '떡볶이', '피자', '아이스크림', '샌드위치', '파스타', '라면'].map((food) => (
                         <button
                           key={food}
                           onClick={() => setFoodName(food)}
-                          className="px-3 py-1 text-xs bg-gradient-to-r from-pink-100 to-purple-100 text-purple-700 rounded-full border border-pink-200 hover:from-pink-200 hover:to-purple-200 transition-colors"
+                          className="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded-full border border-blue-200 hover:bg-blue-200 transition-colors"
                         >
                           {food}
                         </button>
@@ -393,31 +505,49 @@ export default function Home() {
 
             {/* 분석 버튼 */}
             <div className="mt-8 text-center">
-              <button
-                onClick={analyzeNutrition}
-                disabled={isAnalyzing || (!selectedImage && !foodName)}
-                className="flex items-center gap-3 mx-auto px-8 py-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg font-semibold text-lg hover:from-purple-600 hover:to-pink-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg active:scale-95 touch-manipulation"
-              >
-                {isAnalyzing ? (
-                  <>
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                                         냠냥이가 분석 중...
-                  </>
-                ) : (
-                  <>
-                    <span className="text-xl">🐱</span>
-                                         냠냥이에게 분석 부탁하기
-                  </>
-                )}
-              </button>
+              <div className="flex items-center justify-center gap-6">
+                <button
+                  onClick={analyzeNutrition}
+                  disabled={isAnalyzing || (!selectedImage && !foodName)}
+                  className="flex items-center gap-3 px-8 py-4 bg-blue-600 text-white rounded-lg font-semibold text-lg hover:bg-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm active:scale-95 touch-manipulation"
+                >
+                  {isAnalyzing ? (
+                    <>
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                       냠냥이가 분석 중...
+                    </>
+                  ) : (
+                    <>
+                      <span className="text-xl">🐱</span>
+                       냠냥이에게 분석 부탁하기
+                    </>
+                  )}
+                </button>
+                
+                {/* 냠냥이 그림 */}
+                <div className="relative">
+                  <div className="w-24 h-24 bg-pink-400 rounded-full flex items-center justify-center shadow-lg overflow-hidden border-4 border-white">
+                    <Image 
+                      src="/images/nyamnyang.png" 
+                      alt="냠냥이" 
+                      width={96} 
+                      height={96}
+                      className="rounded-full object-cover"
+                    />
+                  </div>
+                  <div className="absolute -top-2 -right-2 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-md border-2 border-pink-200">
+                    <span className="text-sm">👨‍⚕️</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
           {/* 분석 결과 */}
           {nutritionInfo && (
-            <div ref={resultsRef} className="bg-white rounded-2xl shadow-lg p-8 mb-8 border-2 border-pink-100">
+            <div ref={resultsRef} className="bg-white rounded-xl shadow-sm p-8 mb-8 border border-gray-200">
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 bg-gradient-to-r from-pink-400 to-red-500 rounded-full flex items-center justify-center">
+                <div className="w-10 h-10 bg-pink-400 rounded-full flex items-center justify-center">
                   <Utensils className="h-5 w-5 text-white" />
                 </div>
                 <div>
@@ -425,7 +555,7 @@ export default function Home() {
                     냠냥이의 영양 분석 결과
                   </h2>
                   {analysisMessage && (
-                    <p className="text-sm text-purple-600 font-medium mt-1">
+                    <p className="text-sm text-blue-600 font-medium mt-1">
                       {analysisMessage}
                     </p>
                   )}
@@ -437,33 +567,84 @@ export default function Home() {
                 <div className="space-y-4">
                   <h3 className="text-lg font-medium text-gray-900">기본 영양소</h3>
                   <div className="space-y-3">
-                    <div className="flex justify-between items-center p-4 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg border border-yellow-200">
-                      <span className="flex items-center gap-2 text-gray-900">
-                        <Zap className="h-4 w-4 text-yellow-500" />
-                        칼로리
-                      </span>
-                      <span className="font-semibold text-yellow-700">{nutritionInfo.calories} kcal</span>
+                    <div className="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="flex items-center gap-2 text-gray-900">
+                          <Zap className="h-4 w-4 text-yellow-600" />
+                          칼로리
+                        </span>
+                        <span className="font-semibold text-yellow-700">{nutritionInfo.calories} kcal</span>
+                      </div>
+                      <div className="flex justify-between text-xs text-gray-600 mb-2">
+                        <span>1일 권장: {dailyNutrition[selectedAge].calories} kcal</span>
+                        <span>{calculateNutritionPercentage(nutritionInfo.calories, dailyNutrition[selectedAge].calories).toFixed(1)}%</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div 
+                          className="bg-yellow-500 h-2 rounded-full transition-all duration-300"
+                          style={{ width: `${calculateNutritionPercentage(nutritionInfo.calories, dailyNutrition[selectedAge].calories)}%` }}
+                        ></div>
+                      </div>
                     </div>
-                    <div className="flex justify-between items-center p-4 bg-gradient-to-r from-red-50 to-pink-50 rounded-lg border border-red-200">
-                      <span className="flex items-center gap-2 text-gray-900">
-                        <Heart className="h-4 w-4 text-red-500" />
-                        단백질
-                      </span>
-                      <span className="font-semibold text-red-700">{nutritionInfo.protein}g</span>
+                    
+                    <div className="p-4 bg-red-50 rounded-lg border border-red-200">
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="flex items-center gap-2 text-gray-900">
+                          <Heart className="h-4 w-4 text-red-600" />
+                          단백질
+                        </span>
+                        <span className="font-semibold text-red-700">{nutritionInfo.protein}g</span>
+                      </div>
+                      <div className="flex justify-between text-xs text-gray-600 mb-2">
+                        <span>1일 권장: {dailyNutrition[selectedAge].protein}g</span>
+                        <span>{calculateNutritionPercentage(nutritionInfo.protein, dailyNutrition[selectedAge].protein).toFixed(1)}%</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div 
+                          className="bg-red-500 h-2 rounded-full transition-all duration-300"
+                          style={{ width: `${calculateNutritionPercentage(nutritionInfo.protein, dailyNutrition[selectedAge].protein)}%` }}
+                        ></div>
+                      </div>
                     </div>
-                    <div className="flex justify-between items-center p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200">
-                      <span className="flex items-center gap-2 text-gray-900">
-                        <Apple className="h-4 w-4 text-green-500" />
-                        탄수화물
-                      </span>
-                      <span className="font-semibold text-green-700">{nutritionInfo.carbs}g</span>
+                    
+                    <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="flex items-center gap-2 text-gray-900">
+                          <Apple className="h-4 w-4 text-green-600" />
+                          탄수화물
+                        </span>
+                        <span className="font-semibold text-green-700">{nutritionInfo.carbs}g</span>
+                      </div>
+                      <div className="flex justify-between text-xs text-gray-600 mb-2">
+                        <span>1일 권장: {dailyNutrition[selectedAge].carbs}g</span>
+                        <span>{calculateNutritionPercentage(nutritionInfo.carbs, dailyNutrition[selectedAge].carbs).toFixed(1)}%</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div 
+                          className="bg-green-500 h-2 rounded-full transition-all duration-300"
+                          style={{ width: `${calculateNutritionPercentage(nutritionInfo.carbs, dailyNutrition[selectedAge].carbs)}%` }}
+                        ></div>
+                      </div>
                     </div>
-                    <div className="flex justify-between items-center p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
-                      <span className="flex items-center gap-2 text-gray-900">
-                        <Brain className="h-4 w-4 text-blue-500" />
-                        지방
-                      </span>
-                      <span className="font-semibold text-blue-700">{nutritionInfo.fat}g</span>
+                    
+                    <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="flex items-center gap-2 text-gray-900">
+                          <Brain className="h-4 w-4 text-blue-600" />
+                          지방
+                        </span>
+                        <span className="font-semibold text-blue-700">{nutritionInfo.fat}g</span>
+                      </div>
+                      <div className="flex justify-between text-xs text-gray-600 mb-2">
+                        <span>1일 권장: {dailyNutrition[selectedAge].fat}g</span>
+                        <span>{calculateNutritionPercentage(nutritionInfo.fat, dailyNutrition[selectedAge].fat).toFixed(1)}%</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div 
+                          className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                          style={{ width: `${calculateNutritionPercentage(nutritionInfo.fat, dailyNutrition[selectedAge].fat)}%` }}
+                        ></div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -475,26 +656,44 @@ export default function Home() {
                     <div className="p-4 bg-orange-50 rounded-lg border border-orange-200">
                       <div className="text-sm text-orange-600 font-medium">비타민 A</div>
                       <div className="font-semibold text-orange-700">{nutritionInfo.vitamins.vitaminA} μg</div>
+                      <div className="text-xs text-gray-600 mt-1">
+                        권장: {dailyNutrition[selectedAge].vitamins.vitaminA} μg
+                      </div>
                     </div>
                     <div className="p-4 bg-orange-50 rounded-lg border border-orange-200">
                       <div className="text-sm text-orange-600 font-medium">비타민 C</div>
                       <div className="font-semibold text-orange-700">{nutritionInfo.vitamins.vitaminC} mg</div>
+                      <div className="text-xs text-gray-600 mt-1">
+                        권장: {dailyNutrition[selectedAge].vitamins.vitaminC} mg
+                      </div>
                     </div>
                     <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
                       <div className="text-sm text-blue-600 font-medium">비타민 D</div>
                       <div className="font-semibold text-blue-700">{nutritionInfo.vitamins.vitaminD} μg</div>
+                      <div className="text-xs text-gray-600 mt-1">
+                        권장: {dailyNutrition[selectedAge].vitamins.vitaminD} μg
+                      </div>
                     </div>
                     <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
                       <div className="text-sm text-blue-600 font-medium">비타민 E</div>
                       <div className="font-semibold text-blue-700">{nutritionInfo.vitamins.vitaminE} mg</div>
+                      <div className="text-xs text-gray-600 mt-1">
+                        권장: {dailyNutrition[selectedAge].vitamins.vitaminE} mg
+                      </div>
                     </div>
                     <div className="p-4 bg-green-50 rounded-lg border border-green-200">
                       <div className="text-sm text-green-600 font-medium">칼슘</div>
                       <div className="font-semibold text-green-700">{nutritionInfo.minerals.calcium} mg</div>
+                      <div className="text-xs text-gray-600 mt-1">
+                        권장: {dailyNutrition[selectedAge].minerals.calcium} mg
+                      </div>
                     </div>
                     <div className="p-4 bg-green-50 rounded-lg border border-green-200">
                       <div className="text-sm text-green-600 font-medium">철분</div>
                       <div className="font-semibold text-green-700">{nutritionInfo.minerals.iron} mg</div>
+                      <div className="text-xs text-gray-600 mt-1">
+                        권장: {dailyNutrition[selectedAge].minerals.iron} mg
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -504,65 +703,125 @@ export default function Home() {
 
           {/* 추천 음식 */}
           {recommendations.length > 0 && (
-            <div className="bg-white rounded-2xl shadow-lg p-8 border-2 border-purple-100">
+            <div className="bg-white rounded-xl shadow-sm p-8 border border-gray-200">
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 bg-gradient-to-r from-purple-400 to-pink-500 rounded-full flex items-center justify-center">
+                <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
                   <Eye className="h-5 w-5 text-white" />
                 </div>
-                                 <h2 className="text-2xl font-semibold text-gray-800">
-                   냠냥이의 영양소 보충 추천
-                 </h2>
+                <h2 className="text-2xl font-semibold text-gray-800">
+                  냠냥이의 영양소 보충 추천
+                </h2>
               </div>
               
-                             <div className="grid md:grid-cols-3 gap-6">
-                 {recommendations.map((food, index) => (
-                   <div key={index} className="border-2 border-purple-200 rounded-lg p-6 hover:shadow-lg transition-shadow bg-gradient-to-br from-purple-50 to-pink-50">
-                     <div className="text-4xl mb-3">{food.image}</div>
-                     <h3 className="text-lg font-semibold text-gray-800 mb-2">{food.name}</h3>
-                     <p className="text-sm text-purple-600 font-medium mb-2">{food.nutrition}</p>
-                     <p className="text-sm text-gray-600 mb-3">{food.description}</p>
-                     
-                     {/* 추천 음식 리스트 */}
-                     <div className="mt-4">
-                       <p className="text-xs text-gray-500 mb-2 font-medium">추천 음식:</p>
-                       <div className="flex flex-wrap gap-1">
-                         {food.foodList.map((foodItem, foodIndex) => (
-                           <span 
-                             key={foodIndex}
-                             className="inline-block px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded-full border border-purple-200"
-                           >
-                             {foodItem}
-                           </span>
-                         ))}
-                       </div>
-                     </div>
-                   </div>
-                 ))}
-               </div>
+              <div className="grid md:grid-cols-3 gap-6">
+                {recommendations.map((food, index) => (
+                  <div key={index} className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow bg-gray-50">
+                    <div className="text-4xl mb-3">{food.image}</div>
+                    <h3 className="text-lg font-semibold text-gray-800 mb-2">{food.name}</h3>
+                    <p className="text-sm text-blue-600 font-medium mb-2">{food.nutrition}</p>
+                    <p className="text-sm text-gray-600 mb-3">{food.description}</p>
+                    
+                    {/* 추천 음식 리스트 */}
+                    <div className="mt-4">
+                      <p className="text-xs text-gray-500 mb-2 font-medium">추천 음식:</p>
+                      <div className="flex flex-wrap gap-1">
+                        {food.foodList.map((foodItem, foodIndex) => (
+                          <span 
+                            key={foodIndex}
+                            className="inline-block px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full border border-gray-200"
+                          >
+                            {foodItem}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                    
+                    {/* 레시피 섹션 */}
+                    {food.recipes && food.recipes.length > 0 && (
+                      <div className="mt-4 pt-4 border-t border-gray-200">
+                        <p className="text-xs text-gray-500 mb-3 font-medium">레시피 추천:</p>
+                        <div className="space-y-3">
+                          {food.recipes.map((recipe, recipeIndex) => (
+                            <div key={recipeIndex} className="bg-white rounded-lg p-3 border border-gray-200">
+                              <div className="flex items-center justify-between mb-2">
+                                <h4 className="text-sm font-semibold text-gray-800">{recipe.name}</h4>
+                                <div className="flex gap-1">
+                                  <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
+                                    {recipe.cookingTime}
+                                  </span>
+                                  <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
+                                    {recipe.difficulty}
+                                  </span>
+                                </div>
+                              </div>
+                              
+                              {/* 재료 */}
+                              <div className="mb-2">
+                                <p className="text-xs text-gray-500 font-medium mb-1">재료:</p>
+                                <div className="flex flex-wrap gap-1">
+                                  {recipe.ingredients.map((ingredient, ingIndex) => (
+                                    <span 
+                                      key={ingIndex}
+                                      className="text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full"
+                                    >
+                                      {ingredient}
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+                              
+                              {/* 조리법 */}
+                              <div className="mb-2">
+                                <p className="text-xs text-gray-500 font-medium mb-1">조리법:</p>
+                                <ol className="text-xs text-gray-600 space-y-1">
+                                  {recipe.instructions.map((instruction, instIndex) => (
+                                    <li key={instIndex} className="flex">
+                                      <span className="text-blue-500 font-bold mr-2">{instIndex + 1}.</span>
+                                      <span>{instruction}</span>
+                                    </li>
+                                  ))}
+                                </ol>
+                              </div>
+                              
+                              {/* 영양소 */}
+                              <div>
+                                <p className="text-xs text-gray-500 font-medium mb-1">영양소:</p>
+                                <span className="text-xs bg-pink-100 text-pink-700 px-2 py-1 rounded-full">
+                                  {recipe.nutrition}
+                                </span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </div>
         
         {/* 푸터 - 제작자 정보 */}
-        <footer className="mt-16 py-8 border-t border-purple-200">
+        <footer className="mt-16 py-8 border-t border-gray-200">
           <div className="max-w-4xl mx-auto px-4">
             <div className="text-center">
-                             <div className="flex items-center justify-center gap-3 mb-4">
-                 <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
-                   <span className="text-white text-sm font-bold">R</span>
-                 </div>
-                 <h3 className="text-lg font-semibold text-gray-800">R.OTi Lab</h3>
-               </div>
-               <p className="text-gray-600 mb-2">
-                 AI를 활용한 친근한 식생활 교육용 웹 애플리케이션
-               </p>
-               <div className="flex items-center justify-center gap-6 text-sm text-gray-500">
-                 <span>© 2024 R.OTi Lab</span>
-                 <span>•</span>
-                 <span>Made with ❤️ for healthy eating</span>
-                 <span>•</span>
-                 <span>Powered by OpenAI</span>
-               </div>
+              <div className="flex items-center justify-center gap-3 mb-4">
+                <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+                  <span className="text-white text-sm font-bold">R</span>
+                </div>
+                <h3 className="text-lg font-semibold text-gray-800">R.OTi Lab</h3>
+              </div>
+              <p className="text-gray-600 mb-2">
+                AI를 활용한 친근한 식생활 교육용 웹 애플리케이션
+              </p>
+              <div className="flex items-center justify-center gap-6 text-sm text-gray-500">
+                <span>© 2024 R.OTi Lab</span>
+                <span>•</span>
+                <span>Made with ❤️ for healthy eating</span>
+                <span>•</span>
+                <span>Powered by OpenAI</span>
+              </div>
             </div>
           </div>
         </footer>
