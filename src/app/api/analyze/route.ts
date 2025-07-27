@@ -5,8 +5,28 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
+// 영양소 데이터 타입 정의
+interface NutritionInfo {
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  fiber: number;
+  vitamins: {
+    vitaminA: number;
+    vitaminC: number;
+    vitaminD: number;
+    vitaminE: number;
+  };
+  minerals: {
+    calcium: number;
+    iron: number;
+    potassium: number;
+  };
+}
+
 // 영양소 데이터베이스 (실제로는 USDA API 등을 사용)
-const nutritionDatabase = {
+const nutritionDatabase: Record<string, NutritionInfo> = {
   '김치찌개': {
     calories: 320,
     protein: 12.5,
@@ -85,7 +105,7 @@ export async function POST(request: NextRequest) {
     
     if (!nutritionInfo) {
       // 기본 영양소 정보 제공
-      const defaultNutrition = {
+      const defaultNutrition: NutritionInfo = {
         calories: 200,
         protein: 10,
         carbs: 30,
@@ -119,7 +139,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-function generateRecommendations(nutrition: any) {
+function generateRecommendations(nutrition: NutritionInfo) {
   const recommendations = [];
   
   // 철분 부족 체크
