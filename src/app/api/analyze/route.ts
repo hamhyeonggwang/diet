@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+// OpenAI 클라이언트 초기화 (API 키가 없어도 오류가 발생하지 않도록)
+const openai = process.env.OPENAI_API_KEY 
+  ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+  : null;
 
 // 영양소 데이터 타입 정의
 interface NutritionInfo {
@@ -73,29 +74,58 @@ export async function POST(request: NextRequest) {
     
     if (image) {
       // OpenAI Vision API를 사용하여 이미지 분석
-      const response = await openai.chat.completions.create({
-        model: "gpt-4o",
-        messages: [
-          {
-            role: "user",
-            content: [
-              {
-                type: "text",
-                text: "이 이미지에 있는 음식을 한국어로 정확히 식별해주세요. 음식명만 간단히 답변해주세요."
-              },
-              {
-                type: "image_url",
-                image_url: {
-                  url: image
-                }
-              }
-            ]
-          }
-        ],
-        max_tokens: 50
-      });
+      if (!openai) {
+        // API 키가 없는 경우 기본 메시지 반환
+        return NextResponse.json({
+          food: "이미지 분석을 위해 OpenAI API 키가 필요합니다",
+          nutrition: {
+            calories: 0,
+            protein: 0,
+            carbs: 0,
+            fat: 0,
+            fiber: 0,
+            vitamins: { vitaminA: 0, vitaminC: 0, vitaminD: 0, vitaminE: 0 },
+            minerals: { calcium: 0, iron: 0, potassium: 0 }
+          },
+          recommendations: [{
+            name: "음식명 직접 입력",
+            nutrition: "수동 입력",
+            description: "API 키 없이는 이미지 분석이 불가능합니다. 음식명을 직접 입력해주세요.",
+            image: "📝",
+            foodList: ["김치찌개", "샐러드", "닭가슴살", "밥"]
+          }],
+          message: "OpenAI API 키를 설정하면 이미지 분석 기능을 사용할 수 있습니다."
+        });
+      }
 
-      identifiedFood = response.choices[0].message.content?.trim() || '';
+      try {
+        const response = await openai.chat.completions.create({
+          model: "gpt-4o",
+          messages: [
+            {
+              role: "user",
+              content: [
+                {
+                  type: "text",
+                  text: "이 이미지에 있는 음식을 한국어로 정확히 식별해주세요. 음식명만 간단히 답변해주세요."
+                },
+                {
+                  type: "image_url",
+                  image_url: {
+                    url: image
+                  }
+                }
+              ]
+            }
+          ],
+          max_tokens: 50
+        });
+
+        identifiedFood = response.choices[0].message.content?.trim() || '';
+      } catch (error) {
+        console.error('OpenAI API 오류:', error);
+        identifiedFood = '';
+      }
     } else if (foodName) {
       identifiedFood = foodName;
     }

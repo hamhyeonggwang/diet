@@ -1,42 +1,32 @@
-# 🐭🐱 찍찍이와 냠냠이
+# Nutrition Analysis App
 
-AI를 활용한 친근한 식생활 교육용 웹 애플리케이션입니다. 찍찍이(생쥐 탐정)가 음식을 찍으면 냠냥이(고양이 영양사)가 영양소를 분석해드려요!
+영양 분석 애플리케이션입니다.
 
-## ✨ 주요 기능
+## 환경 변수 설정
 
-- **🐭 찍찍이의 탐정 활동**: 카메라로 음식 사진을 찍고 정보를 수집하는 똑똑한 탐정
-- **🐱 냠냥이의 영양 분석**: 찍찍이가 가져온 정보를 맛있게 먹으며 영양소를 알려주는 박사급 영양사
-- **📸 AI 음식 인식**: 사진을 촬영하거나 업로드하여 AI가 음식을 자동으로 식별
-- **📝 음식명 직접 입력**: 음식명을 직접 입력하여 영양 정보 조회
-- **📊 상세한 영양 분석**: 칼로리, 단백질, 탄수화물, 지방, 비타민, 미네랄 정보 제공
-- **💡 개인화된 추천**: 부족한 영양소를 보충할 수 있는 음식 추천
-- **🎨 귀여운 캐릭터 UI**: 찍찍이와 냠냥이 캐릭터가 안내하는 친근한 인터페이스
+### OpenAI API 키 설정
 
-## 🚀 시작하기
-
-### 1. 프로젝트 클론
+1. `.env.local` 파일을 프로젝트 루트에 생성하세요:
 ```bash
-git clone <repository-url>
-cd nutrition-app
+OPENAI_API_KEY=your_actual_openai_api_key_here
 ```
 
-### 2. 의존성 설치
-```bash
-npm install
-```
+2. OpenAI API 키를 얻으려면:
+   - [OpenAI Platform](https://platform.openai.com/api-keys)에서 계정 생성
+   - API 키 생성 후 `.env.local` 파일에 추가
 
-### 3. 환경 변수 설정
-`.env.local` 파일을 생성하고 OpenAI API 키를 설정하세요:
-```env
-OPENAI_API_KEY=your_openai_api_key_here
-```
+⚠️ **보안 주의사항:**
+- `.env.local` 파일은 Git에 올라가지 않습니다 (`.gitignore`에 포함됨)
+- API 키를 코드에 직접 하드코딩하지 마세요
+- API 키를 공개 저장소에 올리지 마세요
 
-### 4. 개발 서버 실행
+## 개발 서버 실행
+
 ```bash
 npm run dev
 ```
 
-브라우저에서 [http://localhost:3000](http://localhost:3000)을 열어 애플리케이션을 확인하세요.
+브라우저에서 [http://localhost:3000](http://localhost:3000)으로 접속하세요.
 
 ## 🛠️ 기술 스택
 
