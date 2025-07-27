@@ -296,7 +296,7 @@ export default function Home() {
                     placeholder="예: 김치찌개, 샐러드, 닭가슴살..."
                     value={foodName}
                     onChange={(e) => setFoodName(e.target.value)}
-                    className="w-full px-4 py-3 border border-purple-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-purple-50"
+                    className="w-full px-4 py-3 border border-purple-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-purple-50 text-gray-900 placeholder-gray-600"
                   />
                   <p className="text-sm text-gray-500">
                                          음식명을 알려주시면 냠냥이가 분석해드릴게요!
