@@ -41,6 +41,34 @@ export default function Home() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
 
+  // 고양이 울음 소리 재생 함수
+  const playCatMeow = () => {
+    try {
+      // Web Audio API를 사용하여 고양이 울음 소리 생성
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      // 고양이 울음 소리 주파수 설정 (높은 음에서 낮은 음으로)
+      oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+      oscillator.frequency.exponentialRampToValueAtTime(400, audioContext.currentTime + 0.3);
+      oscillator.frequency.exponentialRampToValueAtTime(600, audioContext.currentTime + 0.6);
+      
+      // 볼륨 설정
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.8);
+      
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.8);
+      
+    } catch (error) {
+      console.log('고양이 울음 소리 재생 실패:', error);
+    }
+  };
+
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
@@ -59,6 +87,9 @@ export default function Home() {
 
   const analyzeNutrition = async () => {
     if (!selectedImage && !foodName) return;
+    
+    // 고양이 울음 소리 재생
+    playCatMeow();
     
     setIsAnalyzing(true);
     setCurrentCharacter('nyamnyang');
