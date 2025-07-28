@@ -1039,89 +1039,156 @@ export async function POST(request: NextRequest) {
 function generateRecommendations(nutrition: NutritionInfo) {
   const recommendations = [];
   
-  // 철분 부족 체크
-  if (nutrition.minerals.iron < 5) {
-    recommendations.push({
-      name: "시금치",
-      nutrition: "철분, 비타민A",
-      description: "철분이 부족합니다. 시금치를 추가로 섭취하세요.",
-      image: "🥬",
-      foodList: ["시금치", "브로콜리", "콩", "쇠고기", "달걀"],
-      recipes: recipeDatabase['시금치']
-    });
+  // 영양소별 부족도 계산 (연령별 기준 적용)
+  const deficiencies = {
+    iron: nutrition.minerals.iron < 8 ? 'high' : nutrition.minerals.iron < 12 ? 'medium' : 'low',
+    vitaminC: nutrition.vitamins.vitaminC < 45 ? 'high' : nutrition.vitamins.vitaminC < 70 ? 'medium' : 'low',
+    protein: nutrition.protein < 20 ? 'high' : nutrition.protein < 30 ? 'medium' : 'low',
+    calcium: nutrition.minerals.calcium < 200 ? 'high' : nutrition.minerals.calcium < 400 ? 'medium' : 'low',
+    vitaminA: nutrition.vitamins.vitaminA < 400 ? 'high' : nutrition.vitamins.vitaminA < 600 ? 'medium' : 'low',
+    vitaminD: nutrition.vitamins.vitaminD < 5 ? 'high' : nutrition.vitamins.vitaminD < 10 ? 'medium' : 'low',
+    vitaminE: nutrition.vitamins.vitaminE < 8 ? 'high' : nutrition.vitamins.vitaminE < 12 ? 'medium' : 'low',
+    fat: nutrition.fat < 15 ? 'high' : nutrition.fat < 25 ? 'medium' : 'low',
+    fiber: nutrition.fiber < 5 ? 'high' : nutrition.fiber < 10 ? 'medium' : 'low',
+    potassium: nutrition.minerals.potassium < 1000 ? 'high' : nutrition.minerals.potassium < 2000 ? 'medium' : 'low'
+  };
+
+  // 우선순위별 추천 (가장 부족한 영양소부터)
+  const priorityOrder = [
+    { nutrient: 'iron', level: deficiencies.iron, name: '철분', icon: '🩸' },
+    { nutrient: 'vitaminC', level: deficiencies.vitaminC, name: '비타민C', icon: '🍊' },
+    { nutrient: 'protein', level: deficiencies.protein, name: '단백질', icon: '💪' },
+    { nutrient: 'calcium', level: deficiencies.calcium, name: '칼슘', icon: '🦴' },
+    { nutrient: 'vitaminA', level: deficiencies.vitaminA, name: '비타민A', icon: '👁️' },
+    { nutrient: 'vitaminD', level: deficiencies.vitaminD, name: '비타민D', icon: '☀️' },
+    { nutrient: 'vitaminE', level: deficiencies.vitaminE, name: '비타민E', icon: '🛡️' },
+    { nutrient: 'fat', level: deficiencies.fat, name: '지방', icon: '🧈' },
+    { nutrient: 'fiber', level: deficiencies.fiber, name: '식이섬유', icon: '🌾' },
+    { nutrient: 'potassium', level: deficiencies.potassium, name: '칼륨', icon: '🍌' }
+  ];
+
+  // 높은 부족도 영양소부터 추천
+  for (const item of priorityOrder) {
+    if (item.level === 'high') {
+      const recommendation = getRecommendationByNutrient(item.nutrient, item.name, item.icon, 'high');
+      if (recommendation) {
+        recommendations.push(recommendation);
+        if (recommendations.length >= 3) break; // 최대 3개 추천
+      }
+    }
   }
-  
-  // 비타민C 부족 체크
-  if (nutrition.vitamins.vitaminC < 30) {
-    recommendations.push({
-      name: "오렌지",
-      nutrition: "비타민C",
-      description: "비타민C 섭취를 늘려보세요.",
-      image: "🍊",
-      foodList: ["오렌지", "레몬", "키위", "딸기", "파프리카"],
-      recipes: recipeDatabase['오렌지']
-    });
+
+  // 중간 부족도 영양소 추가
+  if (recommendations.length < 2) {
+    for (const item of priorityOrder) {
+      if (item.level === 'medium') {
+        const recommendation = getRecommendationByNutrient(item.nutrient, item.name, item.icon, 'medium');
+        if (recommendation) {
+          recommendations.push(recommendation);
+          if (recommendations.length >= 3) break;
+        }
+      }
+    }
   }
-  
-  // 단백질 부족 체크
-  if (nutrition.protein < 15) {
-    recommendations.push({
-      name: "연어",
-      nutrition: "오메가3, 단백질",
-      description: "고품질 단백질과 오메가3를 섭취하세요.",
-      image: "🐟",
-      foodList: ["연어", "닭가슴살", "계란", "두부", "콩"],
-      recipes: recipeDatabase['연어']
-    });
-  }
-  
-  // 칼슘 부족 체크
-  if (nutrition.minerals.calcium < 100) {
-    recommendations.push({
-      name: "우유",
-      nutrition: "칼슘, 단백질",
-      description: "칼슘 섭취를 늘려보세요.",
-      image: "🥛",
-      foodList: ["우유", "요거트", "치즈", "두부", "브로콜리"],
-      recipes: recipeDatabase['우유']
-    });
-  }
-  
-  // 비타민A 부족 체크
-  if (nutrition.vitamins.vitaminA < 300) {
-    recommendations.push({
-      name: "당근",
-      nutrition: "비타민A",
-      description: "비타민A 섭취를 늘려보세요.",
-      image: "🥕",
-      foodList: ["당근", "고구마", "시금치", "브로콜리", "달걀노른자"],
-      recipes: recipeDatabase['당근']
-    });
-  }
-  
-  // 비타민D 부족 체크
-  if (nutrition.vitamins.vitaminD < 2) {
-    recommendations.push({
-      name: "연어",
-      nutrition: "비타민D",
-      description: "비타민D 섭취를 늘려보세요.",
-      image: "🐟",
-      foodList: ["연어", "고등어", "달걀노른자", "우유", "버섯"],
-      recipes: recipeDatabase['연어']
-    });
-  }
-  
-  // 기본 추천
+
+  // 기본 추천 (모든 영양소가 충분한 경우)
   if (recommendations.length === 0) {
     recommendations.push({
-      name: "견과류",
-      nutrition: "불포화지방, 단백질",
-      description: "건강한 지방과 단백질을 섭취하세요.",
-      image: "🥜",
-      foodList: ["아몬드", "호두", "땅콩", "피스타치오", "캐슈넛"],
+      name: "균형 잡힌 식단",
+      nutrition: "다양한 영양소",
+      description: "현재 영양소가 잘 균형잡혀 있습니다! 다양한 음식을 섭취하세요.",
+      image: "🥗",
+      foodList: ["시금치", "연어", "견과류", "과일", "채소"],
       recipes: recipeDatabase['견과류']
     });
   }
-  
+
   return recommendations;
+}
+
+function getRecommendationByNutrient(nutrient: string, nutrientName: string, icon: string, level: string) {
+  const recommendations = {
+    iron: {
+      name: "철분 보충",
+      nutrition: "철분, 비타민C",
+      description: level === 'high' ? "철분이 많이 부족합니다! 시금치나 쇠고기를 섭취하세요." : "철분 섭취를 늘려보세요.",
+      image: "🥬",
+      foodList: ["시금치", "쇠고기", "콩", "달걀", "브로콜리"],
+      recipes: recipeDatabase['시금치']
+    },
+    vitaminC: {
+      name: "비타민C 보충",
+      nutrition: "비타민C, 항산화물질",
+      description: level === 'high' ? "비타민C가 많이 부족합니다! 신선한 과일을 섭취하세요." : "비타민C 섭취를 늘려보세요.",
+      image: "🍊",
+      foodList: ["오렌지", "키위", "딸기", "파프리카", "브로콜리"],
+      recipes: recipeDatabase['오렌지']
+    },
+    protein: {
+      name: "단백질 보충",
+      nutrition: "고품질 단백질",
+      description: level === 'high' ? "단백질이 많이 부족합니다! 연어나 닭가슴살을 섭취하세요." : "단백질 섭취를 늘려보세요.",
+      image: "🐟",
+      foodList: ["연어", "닭가슴살", "계란", "두부", "콩"],
+      recipes: recipeDatabase['연어']
+    },
+    calcium: {
+      name: "칼슘 보충",
+      nutrition: "칼슘, 단백질",
+      description: level === 'high' ? "칼슘이 많이 부족합니다! 우유나 요거트를 섭취하세요." : "칼슘 섭취를 늘려보세요.",
+      image: "🥛",
+      foodList: ["우유", "요거트", "치즈", "두부", "브로콜리"],
+      recipes: recipeDatabase['우유']
+    },
+    vitaminA: {
+      name: "비타민A 보충",
+      nutrition: "비타민A, 베타카로틴",
+      description: level === 'high' ? "비타민A가 많이 부족합니다! 당근이나 고구마를 섭취하세요." : "비타민A 섭취를 늘려보세요.",
+      image: "🥕",
+      foodList: ["당근", "고구마", "시금치", "브로콜리", "달걀노른자"],
+      recipes: recipeDatabase['당근']
+    },
+    vitaminD: {
+      name: "비타민D 보충",
+      nutrition: "비타민D, 오메가3",
+      description: level === 'high' ? "비타민D가 많이 부족합니다! 연어나 고등어를 섭취하세요." : "비타민D 섭취를 늘려보세요.",
+      image: "🐟",
+      foodList: ["연어", "고등어", "달걀노른자", "우유", "버섯"],
+      recipes: recipeDatabase['연어']
+    },
+    fat: {
+      name: "건강한 지방 보충",
+      nutrition: "불포화지방, 오메가3",
+      description: level === 'high' ? "건강한 지방이 많이 부족합니다! 견과류나 아보카도를 섭취하세요." : "건강한 지방 섭취를 늘려보세요.",
+      image: "🥜",
+      foodList: ["아몬드", "호두", "아보카도", "올리브오일", "연어"],
+      recipes: recipeDatabase['견과류']
+    },
+         fiber: {
+       name: "식이섬유 보충",
+       nutrition: "식이섬유, 비타민",
+       description: level === 'high' ? "식이섬유가 많이 부족합니다! 통곡물이나 채소를 섭취하세요." : "식이섬유 섭취를 늘려보세요.",
+       image: "🌾",
+       foodList: ["현미", "귀리", "브로콜리", "시금치", "사과"],
+       recipes: recipeDatabase['시금치']
+     },
+     vitaminE: {
+       name: "비타민E 보충",
+       nutrition: "비타민E, 항산화물질",
+       description: level === 'high' ? "비타민E가 많이 부족합니다! 견과류나 식물성 기름을 섭취하세요." : "비타민E 섭취를 늘려보세요.",
+       image: "🛡️",
+       foodList: ["아몬드", "해바라기씨", "올리브오일", "아보카도", "견과류"],
+       recipes: recipeDatabase['견과류']
+     },
+     potassium: {
+       name: "칼륨 보충",
+       nutrition: "칼륨, 전해질",
+       description: level === 'high' ? "칼륨이 많이 부족합니다! 바나나나 감자를 섭취하세요." : "칼륨 섭취를 늘려보세요.",
+       image: "🍌",
+       foodList: ["바나나", "감자", "아보카도", "시금치", "요거트"],
+       recipes: recipeDatabase['시금치']
+     }
+  };
+
+  return recommendations[nutrient as keyof typeof recommendations];
 } 
