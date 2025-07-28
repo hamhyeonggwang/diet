@@ -120,7 +120,7 @@ export default function Home() {
   const playCatMeow = () => {
     try {
       // 아이폰에서는 사용자 상호작용 후에만 AudioContext 생성 가능
-      const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+      const AudioContext = window.AudioContext || (window as unknown as { webkitAudioContext: typeof window.AudioContext }).webkitAudioContext;
       const audioContext = new AudioContext();
       
       // 아이폰에서 AudioContext가 suspended 상태일 수 있음
@@ -403,11 +403,15 @@ export default function Home() {
                 <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors bg-gray-50">
                   {selectedImage ? (
                     <div className="space-y-4">
-                      <img 
-                        src={selectedImage} 
-                        alt="Selected food" 
-                        className="w-full h-48 object-cover rounded-lg shadow-sm"
-                      />
+                      <div className="relative w-full h-48">
+                        <Image 
+                          src={selectedImage} 
+                          alt="Selected food" 
+                          fill
+                          className="object-cover rounded-lg shadow-sm"
+                          unoptimized
+                        />
+                      </div>
                       <button
                         onClick={() => setSelectedImage(null)}
                         className="text-red-500 hover:text-red-700 font-medium"

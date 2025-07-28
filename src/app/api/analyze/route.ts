@@ -903,15 +903,6 @@ async function analyzeNutritionWithAI(foodName: string): Promise<NutritionInfo |
   return null;
 }
 
-interface RecommendedFood {
-  name: string;
-  nutrition: string;
-  description: string;
-  image: string;
-  foodList: string[];
-  recipes?: Recipe[];
-}
-
 interface Recipe {
   name: string;
   ingredients: string[];
